@@ -2,6 +2,7 @@
 
 import { ArrowLeft, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 import BudgetItem from "../../budgets/_components/BudgetItem";
 import AddExpense from "../_components/AddExpense";
 import ExpenseListTable from "../_components/ExpenseListTable";
@@ -41,48 +42,73 @@ export default function ExpensesScreen({ params }: ExpensesScreenProps) {
   };
 
   return (
-    <div className="p-10">
-      <h2 className="text-2xl font-bold gap-2 flex justify-between items-center">
-        <span className="flex gap-2 items-center">
-          <ArrowLeft onClick={() => router.back()} className="cursor-pointer" />
-          My Expenses
-        </span>
-        <div className="flex gap-2 items-center">
+    <div>
+      {/* Back + actions row */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <h1 className="text-xl font-semibold">
+            {budgetInfo?.name ?? "Budget Details"}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-2">
           <EditBudget budgetInfo={budgetInfo} />
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button className="flex gap-2 rounded-full" variant="destructive" disabled={isDeleting}>
-                <Trash className="w-4" /> Delete
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isDeleting}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+              >
+                <Trash className="w-4 h-4 mr-2" />
+                Delete
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogTitle>Delete this budget?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete this budget and all its expenses. This action cannot be undone.
+                  This will permanently delete this budget and all its expenses. This
+                  action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete Budget
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 mt-6 gap-5">
-        {budgetInfo ? (
-          <BudgetItem budget={budgetInfo} />
-        ) : (
-          <div className="h-[150px] w-full bg-slate-200 rounded-lg animate-pulse" />
-        )}
-        <AddExpense budgetId={budgetId} />
       </div>
 
-      <div className="mt-4">
-        <ExpenseListTable expensesList={expensesList} budgetId={budgetId} />
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div>
+          {budgetInfo ? (
+            <BudgetItem budget={budgetInfo} />
+          ) : (
+            <Skeleton className="h-[130px] rounded-xl" />
+          )}
+        </div>
+        <div className="lg:col-span-2 space-y-5">
+          <AddExpense budgetId={budgetId} />
+          <ExpenseListTable expensesList={expensesList} budgetId={budgetId} />
+        </div>
       </div>
     </div>
   );

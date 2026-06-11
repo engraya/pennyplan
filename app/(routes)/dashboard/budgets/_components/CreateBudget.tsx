@@ -4,17 +4,19 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import EmojiPicker from "emoji-picker-react";
-import { Loader } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateBudget } from "@/hooks/use-budgets";
@@ -35,72 +37,88 @@ export default function CreateBudget() {
   const onSubmit = (data: CreateBudgetInput) => {
     mutate(
       { ...data, icon: emojiIcon },
-      { onSuccess: () => { setDialogOpen(false); form.reset(); } }
+      {
+        onSuccess: () => {
+          setDialogOpen(false);
+          form.reset();
+          setEmojiIcon("💰");
+        },
+      }
     );
   };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <div className="bg-slate-100 p-10 rounded-2xl items-center flex flex-col border-2 border-dashed cursor-pointer hover:shadow-md transition-shadow">
-          <h2 className="text-3xl">+</h2>
-          <h2>Create New Budget</h2>
-        </div>
+        <Button size="sm">
+          <Plus className="w-4 h-4 mr-2" />
+          New Budget
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create New Budget</DialogTitle>
-          <DialogDescription asChild>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-5 space-y-4">
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="text-lg"
-                  onClick={() => setOpenEmojiPicker(!openEmojiPicker)}
-                >
+        </DialogHeader>
+
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
+          {/* Emoji picker */}
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Icon</label>
+            <Popover open={openEmojiPicker} onOpenChange={setOpenEmojiPicker}>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" className="text-xl w-12 h-10">
                   {emojiIcon}
                 </Button>
-                {openEmojiPicker && (
-                  <div className="absolute z-20">
-                    <EmojiPicker
-                      open={openEmojiPicker}
-                      onEmojiClick={(e) => {
-                        setEmojiIcon(e.emoji);
-                        setOpenEmojiPicker(false);
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="text-black font-medium block mb-1">Budget Name</label>
-                <Input placeholder="e.g. Home Decor" {...form.register("name")} />
-                {form.formState.errors.name && (
-                  <p className="text-red-500 text-xs mt-1">{form.formState.errors.name.message}</p>
-                )}
-              </div>
-              <div>
-                <label className="text-black font-medium block mb-1">Budget Amount</label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 5000"
-                  {...form.register("amount", { valueAsNumber: true })}
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 border-0" align="start">
+                <EmojiPicker
+                  open={openEmojiPicker}
+                  onEmojiClick={(e) => {
+                    setEmojiIcon(e.emoji);
+                    setOpenEmojiPicker(false);
+                  }}
                 />
-                {form.formState.errors.amount && (
-                  <p className="text-red-500 text-xs mt-1">{form.formState.errors.amount.message}</p>
-                )}
-              </div>
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="w-full rounded-full"
-              >
-                {isPending ? <Loader className="animate-spin" /> : "Create Budget"}
-              </Button>
-            </form>
-          </DialogDescription>
-        </DialogHeader>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Budget Name */}
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Budget Name</label>
+            <Input placeholder="e.g. Home Decor" {...form.register("name")} />
+            {form.formState.errors.name && (
+              <p className="text-xs text-destructive mt-1">
+                {form.formState.errors.name.message}
+              </p>
+            )}
+          </div>
+
+          {/* Budget Amount */}
+          <div>
+            <label className="text-sm font-medium block mb-1.5">Budget Amount</label>
+            <Input
+              type="number"
+              placeholder="e.g. 5000"
+              {...form.register("amount", { valueAsNumber: true })}
+            />
+            {form.formState.errors.amount && (
+              <p className="text-xs text-destructive mt-1">
+                {form.formState.errors.amount.message}
+              </p>
+            )}
+          </div>
+
+          <Button type="submit" disabled={isPending} className="w-full">
+            {isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating…
+              </>
+            ) : (
+              "Create Budget"
+            )}
+          </Button>
+        </form>
       </DialogContent>
     </Dialog>
   );

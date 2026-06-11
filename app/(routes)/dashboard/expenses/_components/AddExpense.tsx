@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateExpense } from "@/hooks/use-expenses";
@@ -25,29 +25,40 @@ export default function AddExpense({ budgetId }: AddExpenseProps) {
   };
 
   return (
-    <div className="border p-5 rounded-2xl">
-      <h2 className="font-bold text-lg">Add Expense</h2>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 mt-3">
+    <div className="bg-card rounded-xl border border-border p-6">
+      <h2 className="text-sm font-semibold mb-4">Add Expense</h2>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="text-black font-medium block mb-1">Expense Name</label>
+          <label className="text-sm font-medium block mb-1.5">Expense Name</label>
           <Input placeholder="e.g. Bedroom Decor" {...form.register("name")} />
           {form.formState.errors.name && (
-            <p className="text-red-500 text-xs mt-1">{form.formState.errors.name.message}</p>
+            <p className="text-xs text-destructive mt-1">
+              {form.formState.errors.name.message}
+            </p>
           )}
         </div>
         <div>
-          <label className="text-black font-medium block mb-1">Expense Amount</label>
+          <label className="text-sm font-medium block mb-1.5">Expense Amount</label>
           <Input
             type="number"
             placeholder="e.g. 1000"
             {...form.register("amount", { valueAsNumber: true })}
           />
           {form.formState.errors.amount && (
-            <p className="text-red-500 text-xs mt-1">{form.formState.errors.amount.message}</p>
+            <p className="text-xs text-destructive mt-1">
+              {form.formState.errors.amount.message}
+            </p>
           )}
         </div>
-        <Button type="submit" disabled={isPending} className="w-full rounded-full">
-          {isPending ? <Loader className="animate-spin" /> : "Add New Expense"}
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Adding…
+            </>
+          ) : (
+            "Add Expense"
+          )}
         </Button>
       </form>
     </div>

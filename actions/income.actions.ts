@@ -5,11 +5,11 @@ import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { Incomes } from "@/utils/schema";
-import { createIncomeSchema } from "@/validation/income.schema";
+import { createIncomeSchema, updateIncomeSchema } from "@/validation/income.schema";
 import type { IncomeWithTotal } from "@/types";
 
 export async function getIncomes(): Promise<IncomeWithTotal[]> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const result = await db
@@ -29,7 +29,7 @@ export async function getIncomes(): Promise<IncomeWithTotal[]> {
 }
 
 export async function createIncome(formData: unknown): Promise<void> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const parsed = createIncomeSchema.safeParse(formData);
@@ -46,8 +46,35 @@ export async function createIncome(formData: unknown): Promise<void> {
   revalidatePath("/dashboard");
 }
 
+export async function updateIncome(formData: unknown): Promise<void> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const parsed = updateIncomeSchema.safeParse(formData);
+  if (!parsed.success) throw new Error(parsed.error.errors[0].message);
+
+  const [income] = await db
+    .select()
+    .from(Incomes)
+    .where(and(eq(Incomes.id, parsed.data.id), eq(Incomes.createdBy, userId)));
+
+  if (!income) throw new Error("Income not found or unauthorized");
+
+  await db
+    .update(Incomes)
+    .set({
+      name: parsed.data.name,
+      amount: String(parsed.data.amount),
+      icon: parsed.data.icon,
+    })
+    .where(eq(Incomes.id, parsed.data.id));
+
+  revalidatePath("/dashboard/incomes");
+  revalidatePath("/dashboard");
+}
+
 export async function deleteIncome(incomeId: number): Promise<void> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const [income] = await db

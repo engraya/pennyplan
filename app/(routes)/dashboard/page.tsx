@@ -5,46 +5,70 @@ import CardInfo from "./_components/CardInfo";
 import BarChartDashboard from "./_components/BarChartDashboard";
 import BudgetItem from "./budgets/_components/BudgetItem";
 import ExpenseListTable from "./expenses/_components/ExpenseListTable";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useBudgets } from "@/hooks/use-budgets";
 import { useIncomes } from "@/hooks/use-incomes";
 import { useAllExpenses } from "@/hooks/use-expenses";
 
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+function getFormattedDate() {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function Dashboard() {
   const { user } = useUser();
-  const { data: budgetList = [] } = useBudgets();
+  const { data: budgetList = [], isLoading: budgetsLoading } = useBudgets();
   const { data: incomeList = [] } = useIncomes();
   const { data: expensesList = [] } = useAllExpenses();
 
   return (
-    <div className="p-8">
-      <h2 className="font-bold text-4xl">
-        <span className="bg-gradient-to-r from-indigo-400 to-pink-600 bg-clip-text text-transparent">
-          Hi, {user?.fullName}
-        </span>
-        {" "}👋
-      </h2>
-      <p className="text-gray-500">
-        Here&apos;s what&apos;s happening with your money. Let&apos;s manage your expenses.
-      </p>
+    <div>
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-7">
+        <div>
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              {getGreeting()},{" "}
+              <span className="gradient-text">{user?.firstName}</span>
+            </h1>
+            <span className="text-xl leading-none">👋</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">{getFormattedDate()}</p>
+        </div>
+      </div>
 
+      {/* Stats + AI insight */}
       <CardInfo budgetList={budgetList} incomeList={incomeList} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 mt-6 gap-5">
-        <div className="lg:col-span-2">
+      {/* Main content grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 mt-6 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           <BarChartDashboard budgetList={budgetList} />
           <ExpenseListTable expensesList={expensesList} />
         </div>
-        <div className="grid gap-5">
-          <h2 className="font-bold text-lg">Latest Budgets</h2>
-          {budgetList.length > 0
-            ? budgetList.map((budget) => (
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-4 bg-gradient-to-b from-primary to-violet-600 rounded-full" />
+            <h2 className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">
+              Recent Budgets
+            </h2>
+          </div>
+          {budgetsLoading
+            ? [1, 2, 3].map((i) => <Skeleton key={i} className="h-[130px] rounded-2xl" />)
+            : budgetList.slice(0, 5).map((budget) => (
                 <BudgetItem budget={budget} key={budget.id} />
-              ))
-            : [1, 2, 3, 4].map((item) => (
-                <div
-                  key={item}
-                  className="h-[180px] w-full bg-slate-200 rounded-lg animate-pulse"
-                />
               ))}
         </div>
       </div>

@@ -12,4 +12,9 @@ export const createIncomeSchema = z.object({
   icon: z.string().optional().default("💵"),
 });
 
+export const updateIncomeSchema = createIncomeSchema.extend({
+  id: z.number().int().positive(),
+});
+
 export type CreateIncomeInput = z.infer<typeof createIncomeSchema>;
+export type UpdateIncomeInput = z.infer<typeof updateIncomeSchema>;

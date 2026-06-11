@@ -4,17 +4,18 @@ import {
   getAllExpenses,
   getExpensesByBudget,
   createExpense,
+  updateExpense,
   deleteExpense,
 } from "@/actions/expense.actions";
 import { BUDGETS_KEY } from "./use-budgets";
-import type { CreateExpenseInput } from "@/validation/expense.schema";
+import type { CreateExpenseInput, UpdateExpenseInput } from "@/validation/expense.schema";
 
 export const EXPENSES_KEY = ["expenses"] as const;
 
 export function useAllExpenses() {
   return useQuery({
     queryKey: EXPENSES_KEY,
-    queryFn: getAllExpenses,
+    queryFn: () => getAllExpenses(),
   });
 }
 
@@ -35,6 +36,20 @@ export function useCreateExpense() {
       qc.invalidateQueries({ queryKey: BUDGETS_KEY });
       qc.invalidateQueries({ queryKey: [...EXPENSES_KEY, variables.budgetId] });
       toast.success("Expense added!");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useUpdateExpense() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateExpenseInput) => updateExpense(data),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: EXPENSES_KEY });
+      qc.invalidateQueries({ queryKey: BUDGETS_KEY });
+      qc.invalidateQueries({ queryKey: [...EXPENSES_KEY, variables.budgetId] });
+      toast.success("Expense updated!");
     },
     onError: (err: Error) => toast.error(err.message),
   });

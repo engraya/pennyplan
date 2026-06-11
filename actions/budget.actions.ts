@@ -9,7 +9,7 @@ import { createBudgetSchema, updateBudgetSchema } from "@/validation/budget.sche
 import type { BudgetWithStats } from "@/types";
 
 export async function getBudgets(): Promise<BudgetWithStats[]> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const result = await db
@@ -28,7 +28,7 @@ export async function getBudgets(): Promise<BudgetWithStats[]> {
 }
 
 export async function getBudgetById(budgetId: number): Promise<BudgetWithStats | null> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const result = await db
@@ -46,7 +46,7 @@ export async function getBudgetById(budgetId: number): Promise<BudgetWithStats |
 }
 
 export async function createBudget(formData: unknown): Promise<void> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const parsed = createBudgetSchema.safeParse(formData);
@@ -64,7 +64,7 @@ export async function createBudget(formData: unknown): Promise<void> {
 }
 
 export async function updateBudget(formData: unknown): Promise<void> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const parsed = updateBudgetSchema.safeParse(formData);
@@ -92,7 +92,7 @@ export async function updateBudget(formData: unknown): Promise<void> {
 }
 
 export async function deleteBudget(budgetId: number): Promise<void> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const [budget] = await db

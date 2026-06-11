@@ -1,38 +1,70 @@
 "use client";
-import React from "react";
+
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { useUser, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 function Header() {
-  const { isSignedIn } = useUser();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <div className="p-5 flex justify-between items-center border shadow-sm">
-      <Link href="/">
-      <div className="flex flex-row items-center">
-        <Image src={"/pennyplan.svg"} alt="logo" width={40} height={25} />
-        <span className="text-blue-800  font-bold text-xl">PennyPlan</span>
-      </div>
+    <header
+      className={`h-16 flex items-center justify-between px-6 sticky top-0 z-30 transition-all duration-300 ${
+        scrolled
+          ? "bg-background/80 backdrop-blur-xl border-b border-border/60 shadow-sm"
+          : "bg-transparent"
+      }`}
+    >
+      <Link href="/" className="flex items-center gap-2.5 group">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center shadow-sm shadow-primary/30 group-hover:shadow-primary/50 transition-shadow">
+          <Image
+            src="/pennyplan.svg"
+            alt="PennyPlan logo"
+            width={18}
+            height={18}
+            className="brightness-0 invert"
+          />
+        </div>
+        <span className="font-bold text-base tracking-tight">PennyPlan</span>
       </Link>
 
-      {isSignedIn ? (
-        <UserButton />
-      ) : (
-        <div className="flex gap-3  items-center">
+      <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
+        <a href="#features" className="hover:text-foreground transition-colors">
+          Features
+        </a>
+        <a
+          href="#how-it-works"
+          className="hover:text-foreground transition-colors"
+        >
+          How it works
+        </a>
+      </nav>
 
-          <Link href={"/dashboard"}>
-            <Button variant="outline" className="rounded-full">
-              Dashboard
-            </Button>
-          </Link>
-          <Link href={"/sign-in"}>
-            <Button className="rounded-full">Get Started</Button>
-          </Link>
-          {/* <ThemeToggler/> */}
-        </div>
-      )}
-    </div>
+      <div className="flex items-center gap-3">
+        <SignedIn>
+          <UserButton afterSignOutUrl="/" />
+          <Button asChild size="sm">
+            <Link href="/dashboard">Dashboard</Link>
+          </Button>
+        </SignedIn>
+        <SignedOut>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/sign-in">Sign in</Link>
+          </Button>
+          <Button size="sm" asChild className="shadow-sm shadow-primary/20">
+            <Link href="/sign-up">Get started</Link>
+          </Button>
+        </SignedOut>
+      </div>
+    </header>
   );
 }
 

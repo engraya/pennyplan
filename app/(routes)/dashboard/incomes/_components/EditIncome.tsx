@@ -19,75 +19,64 @@ import {
 import EmojiPicker from "emoji-picker-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useUpdateBudget } from "@/hooks/use-budgets";
-import { updateBudgetSchema, type UpdateBudgetInput } from "@/validation/budget.schema";
-import type { BudgetWithStats } from "@/types";
+import { useUpdateIncome } from "@/hooks/use-incomes";
+import { updateIncomeSchema, type UpdateIncomeInput } from "@/validation/income.schema";
+import type { IncomeWithTotal } from "@/types";
 
-interface EditBudgetProps {
-  budgetInfo: BudgetWithStats | undefined;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+interface EditIncomeProps {
+  income: IncomeWithTotal;
 }
 
-export default function EditBudget({ budgetInfo, open, onOpenChange }: EditBudgetProps) {
-  const isControlled = open !== undefined;
-  const [internalOpen, setInternalOpen] = useState(false);
-  const dialogOpen = isControlled ? open : internalOpen;
-  const setDialogOpen = isControlled ? (onOpenChange ?? setInternalOpen) : setInternalOpen;
-
-  const [emojiIcon, setEmojiIcon] = useState(budgetInfo?.icon ?? "💰");
+export default function EditIncome({ income }: EditIncomeProps) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [emojiIcon, setEmojiIcon] = useState(income.icon ?? "💵");
   const [openEmojiPicker, setOpenEmojiPicker] = useState(false);
 
-  const { mutate, isPending } = useUpdateBudget();
+  const { mutate, isPending } = useUpdateIncome();
 
-  const form = useForm<UpdateBudgetInput>({
-    resolver: zodResolver(updateBudgetSchema),
+  const form = useForm<UpdateIncomeInput>({
+    resolver: zodResolver(updateIncomeSchema),
     defaultValues: {
-      id: budgetInfo?.id,
-      name: budgetInfo?.name ?? "",
-      amount: Number(budgetInfo?.amount ?? 0),
-      icon: budgetInfo?.icon ?? "💰",
+      id: income.id,
+      name: income.name,
+      amount: Number(income.amount),
+      icon: income.icon ?? "💵",
     },
   });
 
   useEffect(() => {
-    if (budgetInfo) {
-      setEmojiIcon(budgetInfo.icon ?? "💰");
+    if (dialogOpen) {
+      setEmojiIcon(income.icon ?? "💵");
       form.reset({
-        id: budgetInfo.id,
-        name: budgetInfo.name,
-        amount: Number(budgetInfo.amount),
-        icon: budgetInfo.icon ?? "💰",
+        id: income.id,
+        name: income.name,
+        amount: Number(income.amount),
+        icon: income.icon ?? "💵",
       });
     }
-  }, [budgetInfo, form]);
+  }, [dialogOpen, income, form]);
 
-  const onSubmit = (data: UpdateBudgetInput) => {
+  const onSubmit = (data: UpdateIncomeInput) => {
     mutate(
       { ...data, icon: emojiIcon },
       { onSuccess: () => setDialogOpen(false) }
     );
   };
 
-  const trigger = !isControlled && (
-    <DialogTrigger asChild>
-      <Button variant="outline" size="sm">
-        <PenLine className="w-4 h-4 mr-2" />
-        Edit
-      </Button>
-    </DialogTrigger>
-  );
-
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      {trigger}
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 px-3 text-xs">
+          <PenLine className="w-3.5 h-3.5 mr-1.5" />
+          Edit
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Update Budget</DialogTitle>
+          <DialogTitle>Update Income Source</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
-          {/* Emoji picker */}
           <div>
             <label className="text-sm font-medium block mb-1.5">Icon</label>
             <Popover open={openEmojiPicker} onOpenChange={setOpenEmojiPicker}>
@@ -108,10 +97,9 @@ export default function EditBudget({ budgetInfo, open, onOpenChange }: EditBudge
             </Popover>
           </div>
 
-          {/* Budget Name */}
           <div>
-            <label className="text-sm font-medium block mb-1.5">Budget Name</label>
-            <Input placeholder="e.g. Home Decor" {...form.register("name")} />
+            <label className="text-sm font-medium block mb-1.5">Source Name</label>
+            <Input placeholder="e.g. Freelance, YouTube" {...form.register("name")} />
             {form.formState.errors.name && (
               <p className="text-xs text-destructive mt-1">
                 {form.formState.errors.name.message}
@@ -119,9 +107,8 @@ export default function EditBudget({ budgetInfo, open, onOpenChange }: EditBudge
             )}
           </div>
 
-          {/* Budget Amount */}
           <div>
-            <label className="text-sm font-medium block mb-1.5">Budget Amount</label>
+            <label className="text-sm font-medium block mb-1.5">Monthly Amount</label>
             <Input
               type="number"
               placeholder="e.g. 5000"

@@ -40,7 +40,7 @@ export default function RootLayout({
         enableSystem
         disableTransitionOnChange
           >
-          <main className="min-h-screen bg-[url('https://pagedone.io/asset/uploads/1691055810.png')] bg-center bg-cover">
+          <main className="min-h-screen bg-background">
             <Providers>{children}</Providers>
           </main>
       </ThemeProvider>

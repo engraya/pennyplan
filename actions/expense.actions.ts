@@ -5,11 +5,11 @@ import { and, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { Budgets, Expenses } from "@/utils/schema";
-import { createExpenseSchema } from "@/validation/expense.schema";
+import { createExpenseSchema, updateExpenseSchema } from "@/validation/expense.schema";
 import type { Expense } from "@/types";
 
 export async function getAllExpenses(): Promise<Expense[]> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const result = await db
@@ -35,7 +35,7 @@ export async function getAllExpenses(): Promise<Expense[]> {
 }
 
 export async function getExpensesByBudget(budgetId: number): Promise<Expense[]> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const [budget] = await db
@@ -61,7 +61,7 @@ export async function getExpensesByBudget(budgetId: number): Promise<Expense[]> 
 }
 
 export async function createExpense(formData: unknown): Promise<void> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const parsed = createExpenseSchema.safeParse(formData);
@@ -84,8 +84,31 @@ export async function createExpense(formData: unknown): Promise<void> {
   revalidatePath("/dashboard");
 }
 
+export async function updateExpense(formData: unknown): Promise<void> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const parsed = updateExpenseSchema.safeParse(formData);
+  if (!parsed.success) throw new Error(parsed.error.errors[0].message);
+
+  const [budget] = await db
+    .select()
+    .from(Budgets)
+    .where(and(eq(Budgets.id, parsed.data.budgetId), eq(Budgets.createdBy, userId)));
+
+  if (!budget) throw new Error("Budget not found or unauthorized");
+
+  await db
+    .update(Expenses)
+    .set({ name: parsed.data.name, amount: String(parsed.data.amount) })
+    .where(and(eq(Expenses.id, parsed.data.id), eq(Expenses.budgetId, parsed.data.budgetId)));
+
+  revalidatePath(`/dashboard/expenses/${parsed.data.budgetId}`);
+  revalidatePath("/dashboard");
+}
+
 export async function deleteExpense(expenseId: number, budgetId: number): Promise<void> {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const [budget] = await db
