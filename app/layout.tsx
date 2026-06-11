@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
+import { Providers } from "@/components/providers";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -40,7 +41,7 @@ export default function RootLayout({
         disableTransitionOnChange
           >
           <main className="min-h-screen bg-[url('https://pagedone.io/asset/uploads/1691055810.png')] bg-center bg-cover">
-          {children}
+            <Providers>{children}</Providers>
           </main>
       </ThemeProvider>
       </body>

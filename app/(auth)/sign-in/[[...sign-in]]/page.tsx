@@ -1,20 +1,12 @@
 import { SignIn } from "@clerk/nextjs";
-import Image from "next/image"
-import sideImage from "@/public/sideImage.jpg"
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
-} from '@clerk/nextjs'
+import Image from "next/image";
 export default function Page() {
   return (
     <section className="bg-white">
       <div className="lg:grid lg:min-h-screen lg:grid-cols-12">
         <section className="relative flex h-32 items-end bg-gray-900 lg:col-span-5 lg:h-full xl:col-span-6">
           <Image
-            src={sideImage}
+            src="/sideImage.jpg"
             alt=""
             height={500}
             width={500}

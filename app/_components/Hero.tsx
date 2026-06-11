@@ -1,14 +1,6 @@
-import React from "react";
 import Link from "next/link";
-import Image from "next/image"
-import heroImage from "@/public/hero.jpg"
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
-} from '@clerk/nextjs'
+import Image from "next/image";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 function Hero() {
 
 
@@ -34,7 +26,7 @@ function Hero() {
     </div>
     {/* Image Div */}
     <div className="relative mx-auto h-[512px]">
-      <Image src={heroImage} width={500} height={500} alt="hero" className="inline-block h-full w-full rounded-xl object-cover sm:rounded-2xl" />
+      <Image src="/hero.jpg" width={500} height={500} alt="hero" className="inline-block h-full w-full rounded-xl object-cover sm:rounded-2xl" />
       <div className="absolute bottom-0 left-4 right-0 top-4 -z-10 h-full w-full rounded-2xl bg-black" />
     </div>
   </div>
