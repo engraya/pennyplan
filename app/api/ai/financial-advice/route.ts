@@ -1,8 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
-import OpenAI from "openai";
 import { NextResponse } from "next/server";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+import { getFlashModel } from "@/lib/gemini";
+import { buildUserFinancialContext } from "@/lib/ai-context";
 
 export async function POST(req: Request) {
   const { userId } = auth();
@@ -10,23 +9,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { totalBudget, totalIncome, totalSpend } = await req.json();
+  try {
+    const { totalBudget, totalIncome, totalSpend } = await req.json();
+    const context = await buildUserFinancialContext(userId);
+    const model = getFlashModel();
 
-  const chat = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      {
-        role: "user",
-        content: `Based on the following financial data:
-- Total Budget: $${totalBudget} USD
-- Expenses: $${totalSpend} USD
-- Income: $${totalIncome} USD
-Provide concise financial advice in exactly 2 sentences to help the user manage their finances more effectively.`,
-      },
-    ],
-    max_tokens: 150,
-  });
+    const prompt = `${context}
 
-  const advice = chat.choices[0].message.content;
-  return NextResponse.json({ advice });
+You are a friendly and knowledgeable personal finance advisor. Based on the financial summary above, provide 4-6 sentences of personalized, actionable financial advice. Be specific — reference the user's actual budget categories, income amounts, and spending patterns by name. Focus on one clear action they can take this week to improve their financial health. Keep the tone encouraging and practical.`;
+
+    const result = await model.generateContent(prompt);
+    const advice = result.response.text();
+
+    return NextResponse.json({ advice });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to generate advice" },
+      { status: 500 }
+    );
+  }
 }

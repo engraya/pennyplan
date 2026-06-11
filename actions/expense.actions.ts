@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { Budgets, Expenses } from "@/utils/schema";
@@ -105,6 +105,76 @@ export async function updateExpense(formData: unknown): Promise<void> {
 
   revalidatePath(`/dashboard/expenses/${parsed.data.budgetId}`);
   revalidatePath("/dashboard");
+}
+
+export async function getRecentExpenses(days = 30): Promise<Expense[]> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+
+  const result = await db
+    .select({
+      id: Expenses.id,
+      name: Expenses.name,
+      amount: Expenses.amount,
+      budgetId: Expenses.budgetId,
+      createdAt: Expenses.createdAt,
+    })
+    .from(Budgets)
+    .rightJoin(Expenses, eq(Budgets.id, Expenses.budgetId))
+    .where(and(eq(Budgets.createdBy, userId), gte(Expenses.createdAt, since)))
+    .orderBy(desc(Expenses.createdAt))
+    .limit(100);
+
+  return result.map((r) => ({
+    ...r,
+    amount: String(r.amount),
+    createdAt:
+      r.createdAt instanceof Date
+        ? r.createdAt.toLocaleDateString("en-GB")
+        : String(r.createdAt),
+  }));
+}
+
+export async function getExpensesByMonth(
+  year: number,
+  month: number
+): Promise<Expense[]> {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const from = new Date(year, month - 1, 1);
+  const to = new Date(year, month, 0, 23, 59, 59, 999);
+
+  const result = await db
+    .select({
+      id: Expenses.id,
+      name: Expenses.name,
+      amount: Expenses.amount,
+      budgetId: Expenses.budgetId,
+      createdAt: Expenses.createdAt,
+    })
+    .from(Budgets)
+    .rightJoin(Expenses, eq(Budgets.id, Expenses.budgetId))
+    .where(
+      and(
+        eq(Budgets.createdBy, userId),
+        gte(Expenses.createdAt, from),
+        lte(Expenses.createdAt, to)
+      )
+    )
+    .orderBy(desc(Expenses.createdAt));
+
+  return result.map((r) => ({
+    ...r,
+    amount: String(r.amount),
+    createdAt:
+      r.createdAt instanceof Date
+        ? r.createdAt.toLocaleDateString("en-GB")
+        : String(r.createdAt),
+  }));
 }
 
 export async function deleteExpense(expenseId: number, budgetId: number): Promise<void> {

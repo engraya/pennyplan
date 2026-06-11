@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, PiggyBank, ReceiptText, CircleDollarSign } from "lucide-react";
+import { LayoutGrid, PiggyBank, ReceiptText, CircleDollarSign, Sparkles } from "lucide-react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ const menuList = [
   { id: 1, name: "Income", icon: CircleDollarSign, path: "/dashboard/incomes" },
   { id: 2, name: "Budgets", icon: PiggyBank, path: "/dashboard/budgets" },
   { id: 3, name: "Expenses", icon: ReceiptText, path: "/dashboard/expenses" },
+  { id: 4, name: "Ask AI", icon: Sparkles, path: "/dashboard/chat" },
 ];
 
 export { menuList };

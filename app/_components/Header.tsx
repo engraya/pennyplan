@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggler } from "@/components/ThemeToggler";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 function Header() {
@@ -49,6 +50,7 @@ function Header() {
       </nav>
 
       <div className="flex items-center gap-3">
+        <ThemeToggler />
         <SignedIn>
           <UserButton afterSignOutUrl="/" />
           <Button asChild size="sm">

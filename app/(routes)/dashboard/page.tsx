@@ -3,6 +3,8 @@
 import { useUser } from "@clerk/nextjs";
 import CardInfo from "./_components/CardInfo";
 import BarChartDashboard from "./_components/BarChartDashboard";
+import HealthScoreGauge from "./_components/HealthScoreGauge";
+import ForecastCard from "./_components/ForecastCard";
 import BudgetItem from "./budgets/_components/BudgetItem";
 import ExpenseListTable from "./expenses/_components/ExpenseListTable";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,6 +52,14 @@ export default function Dashboard() {
 
       {/* Stats + AI insight */}
       <CardInfo budgetList={budgetList} incomeList={incomeList} />
+
+      {/* AI Health Score + Forecast Row */}
+      {budgetList.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+          <HealthScoreGauge budgetList={budgetList} incomeList={incomeList} />
+          <ForecastCard budgetList={budgetList} />
+        </div>
+      )}
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 mt-6 gap-6">

@@ -5,6 +5,7 @@ import { useBudgets } from "@/hooks/use-budgets";
 import { Skeleton } from "@/components/ui/skeleton";
 import CreateBudget from "./CreateBudget";
 import BudgetItem from "./BudgetItem";
+import AiBudgetSetupModal from "./AiBudgetSetupModal";
 
 export default function BudgetList() {
   const { data: budgetList = [], isLoading } = useBudgets();
@@ -34,6 +35,8 @@ export default function BudgetList() {
           ? [1, 2, 3, 4, 5, 6].map((item) => (
               <Skeleton key={item} className="h-[136px] rounded-2xl" />
             ))
+          : budgetList.length === 0
+          ? <AiBudgetSetupModal />
           : budgetList.map((budget) => (
               <BudgetItem budget={budget} key={budget.id} showActions />
             ))}

@@ -197,7 +197,7 @@ export default function CardInfo({ budgetList, incomeList }: CardInfoProps) {
                 AI Financial Insight
               </span>
               <Badge className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-1.5 py-0 h-4">
-                GPT-4o
+                Gemini
               </Badge>
             </div>
             {loadingAdvice ? (

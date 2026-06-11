@@ -33,7 +33,7 @@ const features = [
   {
     icon: Sparkles,
     title: "AI-Powered Insights",
-    desc: "Get personalized financial advice from GPT-4o analyzing your actual spending and savings patterns.",
+    desc: "Get personalized financial advice from Google Gemini AI analyzing your actual spending and savings patterns.",
     gradient: "from-violet-500 to-pink-600",
   },
   {

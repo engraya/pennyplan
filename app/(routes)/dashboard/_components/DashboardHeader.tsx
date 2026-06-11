@@ -10,6 +10,7 @@ const pageMeta: Record<string, { title: string; description: string }> = {
   "/dashboard/budgets": { title: "Budgets", description: "Manage spending limits" },
   "/dashboard/incomes": { title: "Income", description: "Track income streams" },
   "/dashboard/expenses": { title: "Expenses", description: "All transactions" },
+  "/dashboard/chat": { title: "Ask AI", description: "Your Gemini-powered finance advisor" },
 };
 
 export default function DashboardHeader() {

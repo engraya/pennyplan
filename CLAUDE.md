@@ -18,10 +18,10 @@ No test runner is configured.
 
 Copy `.env.example` to `.env.local`. Required vars:
 - `DATABASE_URL` — Neon PostgreSQL connection string
-- `OPENAI_API_KEY` — Used only in `app/api/ai/financial-advice/route.ts`
+- `GOOGLE_AI_API_KEY` — Google Gemini API key (used by all AI routes via `lib/gemini.ts`)
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — Clerk auth
 
-Never use `NEXT_PUBLIC_` prefix on `DATABASE_URL` or `OPENAI_API_KEY`.
+Never use `NEXT_PUBLIC_` prefix on `DATABASE_URL` or `GOOGLE_AI_API_KEY`.
 
 ## Architecture
 
@@ -38,9 +38,30 @@ All database writes and reads flow through this two-layer stack:
 
 Client components import hooks, never actions directly.
 
-### Validation
+### AI layer
 
-`validation/budget.schema.ts`, `expense.schema.ts`, `income.schema.ts` export Zod schemas and their inferred types. The same schemas are used by React Hook Form (`@hookform/resolvers/zod`) in form components and by server actions as the authoritative validation boundary.
+All AI features use Google Gemini via `lib/gemini.ts`, which exports three factory functions:
+- `getFlashModel()` — text responses
+- `getFlashModelJson()` — JSON-mode responses (sets `responseMimeType: "application/json"`)
+- `getProModel()` — streaming chat
+
+All currently use `gemini-2.5-flash`.
+
+`lib/ai-context.ts` — `buildUserFinancialContext(userId)` queries the database and returns a plain-text financial summary injected as context into every AI prompt.
+
+AI routes all follow the same pattern: auth-guard → Zod validate → call Gemini → return response. JSON-returning routes additionally validate the Gemini output against a response schema before returning.
+
+```
+app/api/ai/
+  financial-advice/   # Flash model, text — personalized advice paragraph
+  chat/               # Pro model, streaming text — conversational assistant with full financial context
+  categorize/         # Flash JSON — auto-assigns expense to best matching budget
+  budget-setup/       # Flash JSON — generates 5-7 budget categories from income + location
+  forecast/           # Flash text — projects end-of-month overage per at-risk budget (math done in TS, Gemini writes narrative only)
+  health-score/       # Flash text — computes score formula in TS, Gemini writes 2-sentence explanation
+```
+
+`validation/ai.schema.ts` holds all Zod schemas for AI request and response shapes.
 
 ### Route structure
 
@@ -51,15 +72,19 @@ app/
   (auth)/sign-in|sign-up/           # Clerk-hosted auth pages
   (routes)/dashboard/
     layout.tsx                      # Fixed SideNav + DashboardHeader shell
-    page.tsx                        # Overview: CardInfo, BarChart, latest budgets/expenses
-    budgets/                        # Budget list + create
+    page.tsx                        # Overview: CardInfo, BarChart, ForecastCard, HealthScoreGauge, latest budgets/expenses
+    budgets/                        # Budget list + create; AiBudgetSetupModal for AI-assisted creation
     expenses/                       # All expenses table
     expenses/[id]/                  # Single budget's expenses + EditBudget
     incomes/                        # Income list + create
-  api/ai/financial-advice/route.ts  # POST → OpenAI gpt-4o-mini, auth-guarded
+    chat/                           # Full-page AI chat with streaming responses
 ```
 
-Dashboard routes are protected implicitly by Clerk middleware; server actions also enforce auth individually.
+Dashboard routes are protected implicitly by Clerk middleware; server actions and API routes also enforce auth individually.
+
+### Validation
+
+`validation/budget.schema.ts`, `expense.schema.ts`, `income.schema.ts` export Zod schemas and their inferred types. The same schemas are used by React Hook Form (`@hookform/resolvers/zod`) in form components and by server actions as the authoritative validation boundary.
 
 ### UI
 

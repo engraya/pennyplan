@@ -16,5 +16,10 @@ export const updateBudgetSchema = createBudgetSchema.extend({
   id: z.number().int().positive(),
 });
 
+export const createBudgetsBatchSchema = z.object({
+  budgets: z.array(createBudgetSchema).min(1).max(20),
+});
+
 export type CreateBudgetInput = z.infer<typeof createBudgetSchema>;
 export type UpdateBudgetInput = z.infer<typeof updateBudgetSchema>;
+export type CreateBudgetsBatchInput = z.infer<typeof createBudgetsBatchSchema>;

@@ -30,3 +30,30 @@ export interface Income {
 export interface IncomeWithTotal extends Income {
   totalAmount: number;
 }
+
+export interface AiChatMessage {
+  role: "user" | "model";
+  content: string;
+}
+
+export interface ForecastItem {
+  budgetId: number;
+  budgetName: string;
+  budgetAmount: number;
+  currentSpend: number;
+  projectedSpend: number;
+  projectedOverage: number;
+  narrative: string;
+}
+
+export interface HealthScore {
+  score: number;
+  explanation: string;
+}
+
+export interface BudgetSetupItem {
+  name: string;
+  amount: number;
+  icon: string;
+  reasoning: string;
+}

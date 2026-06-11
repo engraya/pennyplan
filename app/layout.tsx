@@ -20,6 +20,9 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "PennyPlan",
   description: "Manage your finances effortlessly with AI-powered insights and personalized financial advice.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
